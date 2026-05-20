@@ -2,164 +2,223 @@
 
 import { useState } from "react";
 import { useCart } from "../context/CartContext";
+import { supabase } from "../lib/supabase";
+
+type CartItem = {
+  name: string;
+  price: number;
+};
 
 export default function OrderPage() {
-  const { cart, clearCart } = useCart();
+  const { cart } = useCart();
 
-  const [name, setName] = useState("");
-  const [quantity, setQuantity] = useState("");
+  const [name, setName] = useState<string>("");
+  const [phone, setPhone] = useState<string>("");
+  const [address, setAddress] = useState<string>("");
+  const [notes, setNotes] = useState<string>("");
+  const [payment, setPayment] = useState<string>("cash");
+  const [quantity, setQuantity] = useState<string>("");
 
-  const sendOrder = () => {
-    // تجهيز المنتجات
-    const cartItems = cart
-      .map(
-        (item: any, index: number) =>
-          `${index + 1}. ${item.name} - ${item.price}`
-      )
-      .join("\n");
+  // 💰 حساب السعر الإجمالي
+  const totalPrice = (cart as CartItem[]).reduce(
+    (sum: number, item: CartItem) => {
+      return sum + Number(item.price || 0);
+    },
+    0
+  );
 
-    // الرسالة
-    const message = `New Order:
+  // 🚀 إرسال الطلب
+  const sendOrder = async () => {
+    if (!name || !phone || !address || !quantity) {
+      alert("Please fill all fields");
+      return;
+    }
 
-${cartItems}
+    if ((cart as CartItem[]).length === 0) {
+      alert("Cart is empty");
+      return;
+    }
 
-Customer Name: ${name}
-Quantity: ${quantity}`;
+    const cartItems = (cart as CartItem[])
+      .map((item: CartItem) => item.name)
+      .join(", ");
 
-    // حفظ الطلبات للوحة التحكم
-    const existingOrders = JSON.parse(
-      localStorage.getItem("orders") || "[]"
-    );
+    const { error } = await supabase.from("orders").insert([
+      {
+        customer_name: name,
+        phone: phone,
+        address: address,
+        notes: notes,
+        payment_method: payment,
+        product_name: cartItems,
+        quantity: Number(quantity),
+        total_price: totalPrice,
+        status: "pending",
+      },
+    ]);
 
-    const newOrder = {
-      customer: name,
-      quantity,
-      items: cart,
-      date: new Date().toLocaleString(),
-    };
+    if (error) {
+      console.log(error);
+      alert("Error sending order ❌");
+    } else {
+      if (payment === "card") {
+  window.location.href = "/checkout";
+} else {
+  window.location.href = "/success";
+}
 
-    existingOrders.push(newOrder);
-
-    localStorage.setItem("orders", JSON.stringify(existingOrders));
-
-    // نسخ الرسالة
-    navigator.clipboard.writeText(message);
-
-    // فتح إنستغرام
-    window.open("https://ig.me/m/cozycookies.om", "_blank");
-
-    alert("Order copied! Paste it in Instagram DM 📲");
-
-    // تنظيف السلة
-    clearCart();
+      setName("");
+      setPhone("");
+      setAddress("");
+      setNotes("");
+      setQuantity("");
+    }
   };
 
   return (
     <main
       style={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg, #9b2020, #5e0f0f)",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        color: "#ffebe1",
-        padding: "20px",
-        textAlign: "center",
+        background:
+          "linear-gradient(135deg,#3b0606 0%,#7a1414 50%,#9b2020 100%)",
+        padding: "40px 20px",
+        color: "#fff",
+        fontFamily: "sans-serif",
       }}
     >
-      <h1
-        style={{
-          fontSize: "42px",
-          marginBottom: "20px",
-        }}
-      >
-        🧾 Checkout
-      </h1>
-
-      {/* عرض السلة */}
       <div
         style={{
-          background: "#ffebe1",
-          color: "#9b2020",
-          padding: "20px",
-          borderRadius: "15px",
-          width: "300px",
-          marginBottom: "20px",
-          textAlign: "left",
+          maxWidth: "700px",
+          margin: "auto",
+          background: "rgba(255,255,255,0.08)",
+          padding: "30px",
+          borderRadius: "24px",
+          backdropFilter: "blur(14px)",
         }}
       >
-        <h3 style={{ marginBottom: "10px" }}>🛒 Your Cart</h3>
+        <h1
+          style={{
+            textAlign: "center",
+            marginBottom: "30px",
+          }}
+        >
+          🧾 Complete Your Order
+        </h1>
 
-        {cart.length === 0 ? (
-          <p>No items in cart</p>
-        ) : (
-          cart.map((item: any, index: number) => (
-            <div
-              key={index}
-              style={{
-                marginBottom: "10px",
-                borderBottom: "1px solid #ccc",
-                paddingBottom: "8px",
-              }}
-            >
-              <strong>{item.name}</strong>
-              <p>{item.price}</p>
-            </div>
-          ))
-        )}
-      </div>
+        {/* المنتجات */}
+        <div style={{ marginBottom: "25px" }}>
+          <h2>Your Order:</h2>
 
-      {/* الفورم */}
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          gap: "12px",
-          width: "300px",
-        }}
-      >
+          {(cart as CartItem[]).length === 0 ? (
+            <p>No items in cart</p>
+          ) : (
+            (cart as CartItem[]).map(
+              (item: CartItem, index: number) => (
+                <div
+                  key={index}
+                  style={{
+                    background: "rgba(255,255,255,0.06)",
+                    padding: "14px",
+                    borderRadius: "14px",
+                    marginBottom: "10px",
+                  }}
+                >
+                  {item.name} — {item.price}$
+                </div>
+              )
+            )
+          )}
+
+          <h3 style={{ marginTop: "15px" }}>
+            💰 Total: {totalPrice}$
+          </h3>
+        </div>
+
+        {/* الاسم */}
         <input
+          type="text"
           placeholder="Your Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          style={{
-            padding: "12px",
-            borderRadius: "10px",
-            border: "none",
-            outline: "none",
-          }}
+          style={inputStyle}
         />
 
+        {/* الهاتف */}
         <input
-          placeholder="Quantity"
+          type="text"
+          placeholder="Phone Number"
+          value={phone}
+          onChange={(e) => setPhone(e.target.value)}
+          style={inputStyle}
+        />
+
+        {/* العنوان */}
+        <input
+          type="text"
+          placeholder="Address"
+          value={address}
+          onChange={(e) => setAddress(e.target.value)}
+          style={inputStyle}
+        />
+
+        {/* الكمية */}
+        <input
           type="number"
+          placeholder="Quantity"
           value={quantity}
           onChange={(e) => setQuantity(e.target.value)}
+          style={inputStyle}
+        />
+
+        {/* طريقة الدفع */}
+        <select
+          value={payment}
+          onChange={(e) => setPayment(e.target.value)}
+          style={inputStyle}
+        >
+          <option value="cash">Cash On Delivery</option>
+          <option value="card">Card</option>
+        </select>
+
+        {/* الملاحظات */}
+        <textarea
+          placeholder="Notes..."
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
           style={{
-            padding: "12px",
-            borderRadius: "10px",
-            border: "none",
-            outline: "none",
+            ...inputStyle,
+            height: "120px",
           }}
         />
 
+        {/* زر الطلب */}
         <button
           onClick={sendOrder}
           style={{
-            padding: "12px",
-            backgroundColor: "#ffebe1",
-            color: "#9b2020",
+            width: "100%",
+            padding: "16px",
+            borderRadius: "16px",
             border: "none",
-            borderRadius: "10px",
+            background: "#ffebe1",
+            color: "#9b2020",
             fontWeight: "bold",
+            fontSize: "18px",
             cursor: "pointer",
-            fontSize: "16px",
           }}
         >
-          Submit Order
+          Submit Order 🍪
         </button>
       </div>
     </main>
   );
 }
+
+// 🎨 تصميم الحقول
+const inputStyle: React.CSSProperties = {
+  width: "100%",
+  padding: "14px",
+  borderRadius: "14px",
+  border: "none",
+  marginBottom: "18px",
+  fontSize: "16px",
+};

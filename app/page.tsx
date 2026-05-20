@@ -133,10 +133,12 @@ export default function HomePage() {
             lineHeight: "1.6",
           }}
         >
-          Made by Aseel ,Joy you can feel
+          Made by Aseel ,Joy you can feel 🍪
         </p>
 
+        {/* الأزرار */}
         <div style={{ display: "flex", gap: "20px" }}>
+          {/* الطلب */}
           <Link href="/products">
             <button
               style={{
@@ -151,26 +153,28 @@ export default function HomePage() {
                 boxShadow: "0 10px 30px rgba(0,0,0,0.3)",
               }}
             >
-              Order Now
+              Order Now 🍪
             </button>
           </Link>
 
-          <Link href="/cart">
-            <button
-              style={{
-                padding: "16px 35px",
-                borderRadius: "14px",
-                border: "1px solid rgba(255,255,255,0.3)",
-                background: "transparent",
-                color: "#ffebe1",
-                fontSize: "18px",
-                fontWeight: "bold",
-                cursor: "pointer",
-              }}
-            >
-              View Cart
-            </button>
-          </Link>
+          {/* السلة */}
+          <button
+            onClick={() => {
+              window.location.href = "/cart";
+            }}
+            style={{
+              padding: "16px 35px",
+              borderRadius: "14px",
+              border: "1px solid rgba(255,255,255,0.3)",
+              background: "transparent",
+              color: "#ffebe1",
+              fontSize: "18px",
+              fontWeight: "bold",
+              cursor: "pointer",
+            }}
+          >
+            View Cart 🛒
+          </button>
         </div>
       </section>
     </main>

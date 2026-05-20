@@ -1,10 +1,22 @@
 "use client";
 
 import { useCart } from "../context/CartContext";
-import Link from "next/link";
+
+type CartItem = {
+  name: string;
+  price: number;
+};
 
 export default function CartPage() {
   const { cart, removeFromCart } = useCart();
+
+  // 💰 حساب المجموع
+  const totalPrice = (cart as CartItem[]).reduce(
+    (sum: number, item: CartItem) => {
+      return sum + Number(item.price || 0);
+    },
+    0
+  );
 
   return (
     <main
@@ -14,63 +26,92 @@ export default function CartPage() {
         padding: "40px",
         color: "#ffebe1",
         textAlign: "center",
+        fontFamily: "sans-serif",
       }}
     >
-      <h1>🛒 Your Cart</h1>
+      <h1
+        style={{
+          fontSize: "50px",
+          marginBottom: "30px",
+        }}
+      >
+        🛒 Your Cart
+      </h1>
 
-      {cart.length === 0 ? (
+      {(cart as CartItem[]).length === 0 ? (
         <p>No items yet</p>
       ) : (
-        cart.map((item: any, index: number) => (
-          <div
-            key={index}
+        <>
+          {(cart as CartItem[]).map(
+            (item: CartItem, index: number) => (
+              <div
+                key={index}
+                style={{
+                  background: "rgba(255,255,255,0.1)",
+                  padding: "20px",
+                  margin: "15px auto",
+                  width: "320px",
+                  borderRadius: "18px",
+                  backdropFilter: "blur(10px)",
+                }}
+              >
+                <h3>{item.name}</h3>
+
+                <p
+                  style={{
+                    marginTop: "10px",
+                    fontSize: "18px",
+                  }}
+                >
+                  💰 {item.price}$
+                </p>
+
+                <button
+                  onClick={() => removeFromCart(index)}
+                  style={{
+                    marginTop: "15px",
+                    background: "#ffebe1",
+                    color: "#9b2020",
+                    border: "none",
+                    padding: "10px 15px",
+                    borderRadius: "10px",
+                    cursor: "pointer",
+                    fontWeight: "bold",
+                  }}
+                >
+                  Remove
+                </button>
+              </div>
+            )
+          )}
+
+          {/* 💰 المجموع */}
+          <h2 style={{ marginTop: "25px" }}>
+            Total: {totalPrice}$
+          </h2>
+
+          {/* 🚀 Checkout */}
+          <button
+            onClick={() => {
+              window.location.href = "/order";
+            }}
             style={{
+              marginTop: "25px",
+              width: "320px",
+              padding: "16px",
+              borderRadius: "16px",
+              border: "none",
               background: "#ffebe1",
               color: "#9b2020",
-              padding: "15px",
-              margin: "10px auto",
-              width: "250px",
-              borderRadius: "10px",
+              fontWeight: "bold",
+              fontSize: "18px",
+              cursor: "pointer",
             }}
           >
-            <h3>{item.name}</h3>
-            <p>{item.price}</p>
-
-            <button
-              onClick={() => removeFromCart(index)}
-              style={{
-                marginTop: "10px",
-                background: "#9b2020",
-                color: "#ffebe1",
-                border: "none",
-                padding: "8px",
-                borderRadius: "8px",
-                cursor: "pointer",
-              }}
-            >
-              Remove
-            </button>
-          </div>
-        ))
+            Checkout 🍪
+          </button>
+        </>
       )}
-
-      <br />
-
-      <Link href="/order">
-        <button
-          style={{
-            marginTop: "20px",
-            padding: "12px 25px",
-            background: "#ffebe1",
-            color: "#9b2020",
-            border: "none",
-            borderRadius: "10px",
-            cursor: "pointer",
-          }}
-        >
-          Checkout 🧾
-        </button>
-      </Link>
     </main>
   );
 }
