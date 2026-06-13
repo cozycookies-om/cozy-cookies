@@ -1,8 +1,11 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 export default function HomePage() {
+  const router = useRouter();
+
   return (
     <main
       style={{
@@ -53,47 +56,20 @@ export default function HomePage() {
           zIndex: 2,
         }}
       >
-        <h1
-          style={{
-            fontSize: "32px",
-            fontWeight: "bold",
-            letterSpacing: "1px",
-          }}
-        >
+        <h1 style={{ fontSize: "32px", fontWeight: "bold" }}>
           🍪 Cozy Cookies
         </h1>
 
         <div style={{ display: "flex", gap: "20px" }}>
-          <Link
-            href="/products"
-            style={{
-              color: "#ffebe1",
-              textDecoration: "none",
-              fontWeight: "bold",
-            }}
-          >
+          <Link href="/products" style={{ color: "#ffebe1", fontWeight: "bold", textDecoration: "none" }}>
             Products
           </Link>
 
-          <Link
-            href="/cart"
-            style={{
-              color: "#ffebe1",
-              textDecoration: "none",
-              fontWeight: "bold",
-            }}
-          >
+          <Link href="/cart" style={{ color: "#ffebe1", fontWeight: "bold", textDecoration: "none" }}>
             Cart 🛒
           </Link>
 
-          <Link
-            href="/admin"
-            style={{
-              color: "#ffebe1",
-              textDecoration: "none",
-              fontWeight: "bold",
-            }}
-          >
+          <Link href="/admin" style={{ color: "#ffebe1", fontWeight: "bold", textDecoration: "none" }}>
             Dashboard
           </Link>
         </div>
@@ -133,7 +109,7 @@ export default function HomePage() {
             lineHeight: "1.6",
           }}
         >
-          Made by Aseel ,Joy you can feel 🍪
+          Made by Aseel , Joy you can feel 🍪
         </p>
 
         {/* الأزرار */}
@@ -157,11 +133,9 @@ export default function HomePage() {
             </button>
           </Link>
 
-          {/* السلة */}
+          {/* السلة (معدل هنا) */}
           <button
-            onClick={() => {
-              window.location.href = "/cart";
-            }}
+            onClick={() => router.push("/cart")}
             style={{
               padding: "16px 35px",
               borderRadius: "14px",

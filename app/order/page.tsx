@@ -12,14 +12,12 @@ type CartItem = {
 export default function OrderPage() {
   const { cart } = useCart();
 
-  const [name, setName] = useState<string>("");
-  const [phone, setPhone] = useState<string>("");
-  const [address, setAddress] = useState<string>("");
-  const [notes, setNotes] = useState<string>("");
-  const [payment, setPayment] = useState<string>("cash");
-  const [quantity, setQuantity] = useState<string>("");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
+  const [payment, setPayment] = useState("cash");
 
-  // 💰 حساب السعر الإجمالي
+  // 💰 حساب السعر الكامل
   const totalPrice = (cart as CartItem[]).reduce(
     (sum: number, item: CartItem) => {
       return sum + Number(item.price || 0);
@@ -29,60 +27,56 @@ export default function OrderPage() {
 
   // 🚀 إرسال الطلب
   const sendOrder = async () => {
-    if (!name || !phone || !address || !quantity) {
-      alert("Please fill all fields");
-      return;
-    }
-
-    if ((cart as CartItem[]).length === 0) {
-      alert("Cart is empty");
-      return;
-    }
-
-    const cartItems = (cart as CartItem[])
-      .map((item: CartItem) => item.name)
-      .join(", ");
-
-    const { error } = await supabase.from("orders").insert([
-      {
-        customer_name: name,
-        phone: phone,
-        address: address,
-        notes: notes,
-        payment_method: payment,
-        product_name: cartItems,
-        quantity: Number(quantity),
-        total_price: totalPrice,
-        status: "pending",
-      },
-    ]);
-
-    if (error) {
-      console.log(error);
-      alert("Error sending order ❌");
-    } else {
-      if (payment === "card") {
-  window.location.href = "/checkout";
-} else {
-  window.location.href = "/success";
+if (cart.length === 0) {
+alert("Cart is empty");
+return;
 }
 
-      setName("");
-      setPhone("");
-      setAddress("");
-      setNotes("");
-      setQuantity("");
-    }
-  };
+if (!name || !phone || !address) {
+alert("Please fill all fields");
+return;
+}
+
+const cartItems = (cart as CartItem[])
+.map((item: CartItem) => item.name)
+.join(", ");
+
+const { error } = await supabase.from("orders").insert([
+{
+customer_name: name,
+phone: phone,
+address: address,
+product_name: cartItems,
+total_price: totalPrice.toString(),
+payment_method: payment,
+status: "pending",
+},
+]);
+
+if (error) {
+console.error(error);
+alert(error.message);
+return;
+}
+
+alert("Order sent successfully ✅");
+
+if (payment === "card") {
+window.location.href = "/checkout";
+} else {
+window.location.href = "/success";
+}
+};
+
 
   return (
     <main
       style={{
         minHeight: "100vh",
         background:
-          "linear-gradient(135deg,#3b0606 0%,#7a1414 50%,#9b2020 100%)",
+          "linear-gradient(135deg, #3b0606 0%, #7a1414 50%, #9b2020 100%)",
         padding: "40px 20px",
-        color: "#fff",
+        color: "#ffebe1",
         fontFamily: "sans-serif",
       }}
     >
@@ -94,20 +88,23 @@ export default function OrderPage() {
           padding: "30px",
           borderRadius: "24px",
           backdropFilter: "blur(14px)",
+          border: "1px solid rgba(255,255,255,0.12)",
+          boxShadow: "0 10px 40px rgba(0,0,0,0.3)",
         }}
       >
         <h1
           style={{
             textAlign: "center",
             marginBottom: "30px",
+            fontSize: "42px",
           }}
         >
-          🧾 Complete Your Order
+          🧾 Checkout
         </h1>
 
         {/* المنتجات */}
         <div style={{ marginBottom: "25px" }}>
-          <h2>Your Order:</h2>
+          <h2 style={{ marginBottom: "15px" }}>Your Order:</h2>
 
           {(cart as CartItem[]).length === 0 ? (
             <p>No items in cart</p>
@@ -123,15 +120,18 @@ export default function OrderPage() {
                     marginBottom: "10px",
                   }}
                 >
-                  {item.name} — {item.price}$
+                  {item.name} — ${item.price}
                 </div>
               )
             )
           )}
 
-          <h3 style={{ marginTop: "15px" }}>
-            💰 Total: {totalPrice}$
-          </h3>
+          {/* 💰 المجموع */}
+          {(cart as CartItem[]).length > 0 && (
+            <h3 style={{ marginTop: "15px" }}>
+              Total: ${totalPrice}
+            </h3>
+          )}
         </div>
 
         {/* الاسم */}
@@ -140,16 +140,30 @@ export default function OrderPage() {
           placeholder="Your Name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          style={inputStyle}
+          style={{
+            width: "100%",
+            padding: "14px",
+            borderRadius: "14px",
+            border: "none",
+            marginBottom: "18px",
+            fontSize: "16px",
+          }}
         />
 
-        {/* الهاتف */}
+        {/* رقم الهاتف */}
         <input
           type="text"
           placeholder="Phone Number"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
-          style={inputStyle}
+          style={{
+            width: "100%",
+            padding: "14px",
+            borderRadius: "14px",
+            border: "none",
+            marginBottom: "18px",
+            fontSize: "16px",
+          }}
         />
 
         {/* العنوان */}
@@ -158,38 +172,32 @@ export default function OrderPage() {
           placeholder="Address"
           value={address}
           onChange={(e) => setAddress(e.target.value)}
-          style={inputStyle}
+          style={{
+            width: "100%",
+            padding: "14px",
+            borderRadius: "14px",
+            border: "none",
+            marginBottom: "18px",
+            fontSize: "16px",
+          }}
         />
 
-        {/* الكمية */}
-        <input
-          type="number"
-          placeholder="Quantity"
-          value={quantity}
-          onChange={(e) => setQuantity(e.target.value)}
-          style={inputStyle}
-        />
-
-        {/* طريقة الدفع */}
+        {/* الدفع */}
         <select
           value={payment}
           onChange={(e) => setPayment(e.target.value)}
-          style={inputStyle}
+          style={{
+            width: "100%",
+            padding: "14px",
+            borderRadius: "14px",
+            border: "none",
+            marginBottom: "22px",
+            fontSize: "16px",
+          }}
         >
           <option value="cash">Cash On Delivery</option>
-          <option value="card">Card</option>
+          <option value="card">Card Payment</option>
         </select>
-
-        {/* الملاحظات */}
-        <textarea
-          placeholder="Notes..."
-          value={notes}
-          onChange={(e) => setNotes(e.target.value)}
-          style={{
-            ...inputStyle,
-            height: "120px",
-          }}
-        />
 
         {/* زر الطلب */}
         <button
@@ -212,13 +220,3 @@ export default function OrderPage() {
     </main>
   );
 }
-
-// 🎨 تصميم الحقول
-const inputStyle: React.CSSProperties = {
-  width: "100%",
-  padding: "14px",
-  borderRadius: "14px",
-  border: "none",
-  marginBottom: "18px",
-  fontSize: "16px",
-};

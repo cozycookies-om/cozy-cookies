@@ -1,242 +1,137 @@
 "use client";
 
-import Image from "next/image";
+import { useEffect, useState } from "react";
+import { supabase } from "../lib/supabase";
 import { useCart } from "../context/CartContext";
 
+type Product = {
+  id: number;
+  name: string;
+  price: number;
+  image: string;
+};
+
 export default function ProductsPage() {
+  const [products, setProducts] = useState<Product[]>([]);
   const { addToCart } = useCart();
 
-  const products = [
-    {
-      name: "crunchy pudding cookies",
-      desc: "scoop-kinder and pistachio-crunchy rice",
-      price: "2.400 OMR",
-      image: "/images/pudding.jpeg",
-    },
-    {
-      name: "cookie cake",
-      desc: "with creamy layers",
-      price: "4.200 OMR",
-      image: "/images/cake.jpeg",
-    },
-    {
-      name: "Classic Cookies",
-      desc: "one pc",
-      price: "0.800 OMR",
-      image: "/images/classic.jpeg",
-    },
-    {
-      name: "hello kitty cake",
-      desc: "filled with chocolate",
-      price: "4.400 OMR",
-      image: "/images/hello kity.jpeg",
-    },
-    {
-      name: "pudding box",
-      desc: "9 piece -2 sauce",
-      price: "8.000 OMR",
-      image: "/images/pudding box.jpeg",
-    },
-  ];
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    const { data, error } = await supabase.from("products").select("*");
+
+    if (error) {
+      console.log(error);
+    } else {
+      setProducts(data || []);
+    }
+  };
 
   return (
     <main
       style={{
         minHeight: "100vh",
         background:
-          "radial-gradient(circle at top, #b12b2b 0%, #5c0b0b 40%, #220202 100%)",
-        padding: "60px 25px",
-        fontFamily: "sans-serif",
+          "linear-gradient(135deg, #3b0606 0%, #7a1414 50%, #9b2020 100%)",
+        padding: "50px 20px",
         color: "#ffebe1",
-        position: "relative",
-        overflow: "hidden",
+        fontFamily: "sans-serif",
       }}
     >
-      {/* Glow Effects */}
-      <div
-        style={{
-          position: "absolute",
-          width: "500px",
-          height: "500px",
-          background: "rgba(255,235,225,0.08)",
-          borderRadius: "50%",
-          top: "-150px",
-          right: "-100px",
-          filter: "blur(90px)",
-        }}
-      />
-
-      <div
-        style={{
-          position: "absolute",
-          width: "400px",
-          height: "400px",
-          background: "rgba(255,255,255,0.05)",
-          borderRadius: "50%",
-          bottom: "-100px",
-          left: "-100px",
-          filter: "blur(90px)",
-        }}
-      />
-
-      {/* العنوان */}
-      <div
+      <h1
         style={{
           textAlign: "center",
-          marginBottom: "70px",
-          position: "relative",
-          zIndex: 2,
+          marginBottom: "50px",
+          fontSize: "52px",
+          fontWeight: "bold",
+          letterSpacing: "1px",
         }}
       >
-        <h1
-          style={{
-            fontSize: "72px",
-            marginBottom: "15px",
-            fontWeight: "bold",
-            letterSpacing: "2px",
-            textShadow: "0 5px 20px rgba(0,0,0,0.35)",
-          }}
-        >
-          🍪 Luxury Cookies
-        </h1>
+        🍪 Our Cookies
+      </h1>
 
-        <p
-          style={{
-            fontSize: "20px",
-            opacity: 0.9,
-            maxWidth: "700px",
-            margin: "auto",
-            lineHeight: "1.7",
-          }}
-        >
-          Handcrafted premium cookies made with rich flavors,
-          creamy fillings, and luxury ingredients.
-        </p>
-      </div>
-
-      {/* المنتجات */}
       <div
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-          gap: "35px",
-          maxWidth: "1400px",
-          margin: "auto",
-          position: "relative",
-          zIndex: 2,
+          gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))",
+          gap: "30px",
+          maxWidth: "1200px",
+          margin: "0 auto",
         }}
       >
-        {products.map((item, index) => (
+        {products.map((product) => (
           <div
-            key={index}
+            key={product.id}
             style={{
               background: "rgba(255,255,255,0.08)",
-              border: "1px solid rgba(255,255,255,0.12)",
-              borderRadius: "28px",
+              borderRadius: "24px",
               overflow: "hidden",
-              backdropFilter: "blur(18px)",
-              boxShadow: "0 20px 60px rgba(0,0,0,0.35)",
-              transition: "0.4s ease",
+              backdropFilter: "blur(16px)",
+              border: "1px solid rgba(255,255,255,0.15)",
+              boxShadow: "0 10px 30px rgba(0,0,0,0.25)",
+              transition: "transform 0.25s ease, box-shadow 0.25s ease",
+              cursor: "pointer",
             }}
+            onMouseEnter={(e) =>
+              (e.currentTarget.style.transform = "translateY(-8px)")
+            }
+            onMouseLeave={(e) =>
+              (e.currentTarget.style.transform = "translateY(0)")
+            }
           >
-            {/* الصورة */}
-            <div
+            <img
+              src={product.image}
+              alt={product.name}
               style={{
-                overflow: "hidden",
+                width: "100%",
+                height: "220px",
+                objectFit: "cover",
               }}
-            >
-              <Image
-                src={item.image}
-                alt={item.name}
-                width={500}
-                height={400}
-                style={{
-                  width: "100%",
-                  height: "300px",
-                  objectFit: "cover",
-                  transition: "0.5s",
-                }}
-              />
-            </div>
+            />
 
-            {/* المحتوى */}
-            <div
-              style={{
-                padding: "25px",
-              }}
-            >
-              <h2
-                style={{
-                  fontSize: "30px",
-                  marginBottom: "12px",
-                  color: "#fff4ef",
-                  textTransform: "capitalize",
-                }}
-              >
-                {item.name}
+            <div style={{ padding: "15px 18px" }}>
+              <h2 style={{ fontSize: "20px", marginBottom: "10px" }}>
+                {product.name}
               </h2>
 
               <p
                 style={{
-                  fontSize: "15px",
-                  opacity: 0.85,
-                  lineHeight: "1.8",
-                  marginBottom: "20px",
+                  fontSize: "18px",
+                  fontWeight: "bold",
+                  color: "#ffe7dc",
+                  marginBottom: "15px",
                 }}
               >
-                {item.desc}
+                {new Intl.NumberFormat("en-OM", {
+                  minimumFractionDigits: 3,
+                  maximumFractionDigits: 3,
+                }).format(product.price)}{" "}
+                RO
               </p>
 
-              {/* السعر */}
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: "22px",
-                }}
-              >
-                <h3
-                  style={{
-                    fontSize: "24px",
-                    color: "#ffebe1",
-                  }}
-                >
-                  {item.price}
-                </h3>
-
-                <span
-                  style={{
-                    background: "rgba(255,255,255,0.12)",
-                    padding: "8px 14px",
-                    borderRadius: "999px",
-                    fontSize: "13px",
-                    border: "1px solid rgba(255,255,255,0.12)",
-                  }}
-                >
-                  Premium
-                </span>
-              </div>
-
-              {/* الزر */}
               <button
-                onClick={() => addToCart(item)}
+                onClick={() => addToCart(product)}
                 style={{
                   width: "100%",
-                  padding: "16px",
+                  padding: "12px",
+                  borderRadius: "12px",
                   border: "none",
-                  borderRadius: "18px",
-                  background:
-                    "linear-gradient(135deg, #ffebe1 0%, #ffffff 100%)",
-                  color: "#7a1414",
+                  background: "#ffebe1",
+                  color: "#9b2020",
                   fontWeight: "bold",
-                  fontSize: "17px",
                   cursor: "pointer",
-                  boxShadow: "0 10px 25px rgba(0,0,0,0.25)",
-                  transition: "0.3s",
+                  transition: "0.2s",
                 }}
+                onMouseOver={(e) =>
+                  (e.currentTarget.style.opacity = "0.85")
+                }
+                onMouseOut={(e) =>
+                  (e.currentTarget.style.opacity = "1")
+                }
               >
-                Add to Cart 🛒
+                Add To Cart 🛒
               </button>
             </div>
           </div>
